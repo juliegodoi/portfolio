@@ -1035,10 +1035,19 @@ function initSpotlight() {
 
 /* ---------- Linha de progresso da rolagem ---------- */
 function initScrollLine() {
+  const toTop = document.querySelector('.to-top');
   const update = () => {
     const max = root.scrollHeight - root.clientHeight;
     root.style.setProperty('--progress', max > 0 ? (root.scrollTop / max).toFixed(4) : 0);
+    // botão "voltar ao topo" aparece depois de passar do hero
+    if (toTop) toTop.classList.toggle('is-visible', window.scrollY > window.innerHeight * 0.6);
   };
+  if (toTop) {
+    toTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+      document.querySelector('.nav__brand').focus({ preventScroll: true });
+    });
+  }
   window.addEventListener('scroll', update, { passive: true });
   update();
 }

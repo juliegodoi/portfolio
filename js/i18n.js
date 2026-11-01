@@ -20,6 +20,7 @@ window.I18N_EN = {
   'nav.open': 'Open menu',
   'nav.close': 'Close menu',
   'lang.label': 'Language',
+  'totop': 'Back to top',
   'theme.toggle': 'Toggle light/dark theme',
 
   'hero.role': 'Software Quality Assurance Analyst',

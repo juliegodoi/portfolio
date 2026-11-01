@@ -90,6 +90,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -512,6 +513,7 @@ button {
 /* ---------- Hero: conteúdo à esquerda, avatar à direita ---------- */
 .hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 40px;
   padding-block: 40px 64px;
   align-items: center;
@@ -593,7 +595,8 @@ button {
   font-family: inherit;
   font-size: 13px;
   line-height: 1.8;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: var(--text);
 }
 
@@ -603,6 +606,8 @@ button {
 
 .boot .line {
   display: block;
+  padding-left: 7ch;          /* recuo: a linha quebrada alinha depois do [ OK ] */
+  text-indent: -7ch;
   opacity: 0;
   transform: translateX(-4px);
 }
@@ -2494,7 +2499,7 @@ button {
   }
 
   .hero {
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: minmax(0, 1fr) 400px;
     gap: 56px;
     min-height: calc(100vh - 60px);
     padding-block: 48px;
@@ -2599,6 +2604,66 @@ button {
   .projects {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* =========================================================
+   Botão "voltar ao topo"
+   ========================================================= */
+.to-top {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: var(--bg-2);
+  color: var(--green);
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px var(--shadow);
+  opacity: 0;
+  transform: translateY(14px) scale(.9);
+  pointer-events: none;
+  transition: opacity .3s var(--ease), transform .3s var(--ease), border-color .2s;
+}
+.to-top.is-visible { opacity: 1; transform: none; pointer-events: auto; }
+.to-top:hover { border-color: var(--green-dim); }
+.to-top__arrow { transition: transform .25s var(--ease); }
+.to-top:hover .to-top__arrow { transform: translateY(-3px); }
+/* anel que mostra quanto da página já foi rolado */
+.to-top__ring {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.to-top__ring circle {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-dasharray: 138.2;
+  stroke-dashoffset: calc(138.2 * (1 - var(--progress, 0)));
+}
+
+/* ---------- Telas pequenas (ex.: celulares de 360px) ---------- */
+@media (max-width: 420px) {
+  .container { padding-inline: 16px; }
+  .nav { gap: 10px; }
+  .nav__brand { font-size: 15px; }
+  .nav__tools { gap: 6px; }
+  .lang-switch__btn { padding: 3px 6px; }
+  .icon-btn,
+  .nav__toggle { width: 32px; height: 32px; }
+  .boot { padding: 10px 12px; font-size: 12px; }
+  .hero__actions .btn { flex: 1 1 auto; justify-content: center; }
+  .to-top { right: calc(12px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* Acessibilidade: respeita quem prefere menos movimento */

@@ -744,7 +744,6 @@ button {
   color: var(--text-2);
 }
 
-
 /* =========================================================
    Skills — cards com cenas animadas
    ========================================================= */
@@ -1756,75 +1755,6 @@ button {
   float: right;
 }
 
-.crud__row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 0;
-  border-bottom: 1px dashed var(--line);
-}
-
-.crud__path {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crud__row .code {
-  margin-left: auto;
-}
-
-.robot__rule {
-  overflow: hidden;
-  text-overflow: clip !important;
-}
-
-.robot__pass {
-  float: right;
-  color: var(--green);
-  font-weight: 500;
-}
-
-.covbar {
-  display: grid;
-  grid-template-columns: 76px 1fr 40px;
-  align-items: center;
-  gap: 8px;
-  margin: 3px 0;
-}
-
-.covbar span {
-  color: var(--muted);
-}
-
-.covbar i {
-  height: 4px;
-  border-radius: 2px;
-  background: var(--line);
-  position: relative;
-  overflow: hidden;
-}
-
-.covbar i::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--green);
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
-.covbar.is-on i::after {
-  transform: scaleX(1);
-  transition: transform 1s var(--ease);
-}
-
-.covbar b {
-  text-align: right;
-  color: var(--green);
-  font-weight: 500;
-}
-
 .todo {
   border: 1px solid var(--line-2);
   border-radius: 6px;
@@ -2332,73 +2262,280 @@ button {
   align-content: start;
 }
 
-/* Ilustração: envelope em ASCII dentro de uma janela de terminal */
-.mail-art {
+/* Ilustração do contato: só um bug sendo encontrado e corrigido */
+.qa-art {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-.mail-art__body {
-  position: relative;
-  flex: 1;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 14px;
-  padding: 28px 16px 22px;
-  overflow: hidden;
-}
-
-.mail-art__env {
-  margin: 0;
-  font-family: inherit;
-  font-size: clamp(11px, 3.4vw, 16px);
-  line-height: 1.2;
-  color: var(--green);
-  white-space: pre;
-}
-
-/* camadas da animação ASCII */
-.mail-art__env .p {
-  color: var(--text-2);
-}
-
-/* carta */
-.mail-art__env .t {
+.qa-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  font-size: 11px;
   color: var(--muted);
 }
 
-/* rastro de movimento */
-.mail-art__env .s {
-  /* selo de coração */
-  display: inline-block;
-  width: 1ch;
-  text-align: center;
+.qa-status i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  transition: background .3s;
+}
+
+.qa-status[data-state="watch"] i { animation: blink-soft 1.6s ease-in-out infinite; }
+.qa-status[data-state="scan"] i { background: var(--amber); }
+.qa-status[data-state="found"] { color: var(--red); }
+.qa-status[data-state="found"] i { background: var(--red); }
+.qa-status[data-state="fixed"] { color: var(--green); }
+
+@keyframes blink-soft { 50% { opacity: .3; } }
+
+.qa-art__body {
+  position: relative;
+  flex: 1;
+  min-height: 240px;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* com mouse dentro da janela, o cursor vira a lupa */
+.qa-art__body.is-hunting { cursor: none; }
+
+/* placar de bugs corrigidos pela pessoa */
+.qa-score {
+  margin-left: auto;
+  font-size: 11px;
   color: var(--green);
-  transform: scale(1.9);
-  /* aumenta sem mexer no alinhamento */
+  opacity: 0;
+  transition: opacity .3s;
 }
 
-.mail-art__env .s.pop {
-  animation: seal-pop .5s cubic-bezier(.3, 1.6, .5, 1);
-}
+.qa-score.is-on { opacity: 1; }
+.qa-score b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.qa-score.is-bump b { display: inline-block; animation: bump .4s cubic-bezier(.3, 1.6, .5, 1); }
 
-@keyframes seal-pop {
-  from {
-    transform: scale(0);
-  }
+@keyframes bump { 40% { transform: scale(1.5); } }
 
-  to {
-    transform: scale(1.9);
-  }
-}
-
-.mail-art__line {
+/* dica de interação */
+.qa-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
   margin: 0;
-  font-size: 12.5px;
-  color: var(--text-2);
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  pointer-events: none;
+  transition: opacity .5s;
 }
 
+.qa-hint.is-hidden { opacity: 0; }
+
+/* o bug: anda virado para a direção do movimento (--rot) */
+.qa-bug {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  color: var(--red);
+  opacity: 0;
+  cursor: pointer;
+  transition: transform 1s cubic-bezier(.45, .05, .55, .95), opacity .3s;
+}
+
+/* área de clique maior que o desenho, para ficar fácil acertar */
+.qa-bug::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+}
+
+.qa-bug svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(var(--rot, -90deg));
+  transition: transform .35s ease, opacity .3s;
+}
+
+.qa-bug.is-walking .qa-bug__legs--a { animation: legs .16s steps(2) infinite alternate; }
+.qa-bug.is-walking .qa-bug__legs--b { animation: legs .16s steps(2) infinite alternate-reverse; }
+.qa-bug.is-squashed svg {
+  transform: rotate(var(--rot, -90deg)) scale(0);
+  opacity: 0;
+  transition-timing-function: cubic-bezier(.6, -0.6, .7, 0);
+}
+
+@keyframes legs { to { transform: translateY(1.2px); } }
+
+/* lupa que procura o bug */
+.qa-lens {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 60px;
+  margin: -24px 0 0 -24px;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .9s cubic-bezier(.45, 0, .25, 1), opacity .35s;
+}
+
+.qa-lens svg { display: block; width: 100%; height: 100%; }
+.qa-lens.is-follow { transition: transform .05s linear, opacity .2s; }
+.qa-lens.is-on { opacity: 1; }
+.qa-lens.is-found { color: var(--red); }
+
+/* efeito de "corrigido": tudo dentro de .qa-fx, posicionado no ponto do bug */
+.qa-fx {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ondas de choque */
+.qa-wave {
+  position: absolute;
+  left: -12px;
+  top: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
+  opacity: 0;
+}
+
+.qa-fx.is-on .qa-wave { animation: wave .75s cubic-bezier(.2, .7, .3, 1) forwards; }
+.qa-fx.is-on .qa-wave--2 { animation-delay: .14s; }
+
+@keyframes wave {
+  0% { opacity: .9; transform: scale(.4); }
+  100% { opacity: 0; transform: scale(4.5); }
+}
+
+/* fragmentos de código que voam (o JS sorteia caractere e direção) */
+.qa-burst { position: absolute; left: 0; top: 0; }
+
+.qa-burst i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--red);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.qa-fx.is-on .qa-burst i { animation: glyph .85s cubic-bezier(.15, .8, .3, 1) forwards; }
+
+@keyframes glyph {
+  0% { opacity: 1; color: var(--red); transform: translate(-50%, -50%) scale(.5); }
+  35% { color: var(--green); }
+  100% {
+    opacity: 0;
+    color: var(--green);
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--r)) scale(1);
+  }
+}
+
+/* círculo + ✓ que se desenham */
+.qa-done {
+  position: absolute;
+  left: -24px;
+  top: -24px;
+  width: 48px;
+  height: 48px;
+  opacity: 0;
+}
+
+.qa-done svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qa-done__circle {
+  fill: var(--green-bg);
+  stroke-dasharray: 126;
+  stroke-dashoffset: 126;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.qa-done__check {
+  stroke-dasharray: 32;
+  stroke-dashoffset: 32;
+}
+
+.qa-fx.is-on .qa-done { animation: done-life 1.9s ease forwards; }
+.qa-fx.is-on .qa-done__circle { animation: draw .45s ease-out .1s forwards; }
+.qa-fx.is-on .qa-done__check { animation: draw .3s ease-out .45s forwards; }
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@keyframes done-life {
+  0% { opacity: 0; transform: scale(.6); }
+  12% { opacity: 1; transform: scale(1.12); }
+  24% { transform: scale(1); }
+  82% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.85); }
+}
+
+/* "corrigido!" subindo */
+.qa-pop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  opacity: 0;
+  transform: translate(-50%, -50px);
+}
+
+.qa-fx.is-on .qa-pop { animation: pop-up 1.8s cubic-bezier(.2, .8, .3, 1) .35s forwards; }
+
+@keyframes pop-up {
+  0% { opacity: 0; transform: translate(-50%, -38px); }
+  18% { opacity: 1; transform: translate(-50%, -52px); }
+  75% { opacity: 1; transform: translate(-50%, -56px); }
+  100% { opacity: 0; transform: translate(-50%, -68px); }
+}
+
+/* brilho suave na janela inteira */
+.qa-art__body.is-flash { animation: body-flash .7s ease-out; }
+
+@keyframes body-flash {
+  0% { background: rgba(var(--ascii-accent), .09); }
+  100% { background: transparent; }
+}
+
+/* versão sem animação (reduzir movimento): ✓ aparece pronto */
+.qa-fx.is-static .qa-done { opacity: 1; }
+.qa-fx.is-static .qa-done__circle,
+.qa-fx.is-static .qa-done__check { stroke-dashoffset: 0; }
 
 .contact__item {
   position: relative;
@@ -2431,17 +2568,38 @@ button {
   overflow-wrap: anywhere;
 }
 
-.contact__arrow {
+.contact__icon {
   grid-column: 2;
   grid-row: 1 / span 2;
-  font-size: 18px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
   color: var(--green);
-  transition: transform .25s var(--ease);
+  transition: border-color .25s, background .25s;
 }
 
-.contact__item:hover .contact__arrow {
-  transform: translateX(4px);
+.contact__icon svg {
+  width: 19px;
+  height: 19px;
+  overflow: visible;
+  transition: transform .3s var(--ease);
 }
+
+.contact__item:hover .contact__icon {
+  border-color: var(--green-dim);
+  background: var(--green-bg);
+}
+
+/* cada ícone tem um movimento próprio no hover */
+.contact__item:hover .contact__icon--mail svg { transform: rotate(-8deg) scale(1.08); }
+.contact__item:hover .contact__icon--link svg { transform: translate(2px, -2px); }
+.contact__icon--download .dl-arrow { transition: transform .3s var(--ease); }
+.contact__item:hover .contact__icon--download .dl-arrow { animation: dl-bounce .8s var(--ease) infinite; }
+@keyframes dl-bounce { 50% { transform: translateY(2.5px); } }
 
 /* ---------- Footer ---------- */
 .footer {

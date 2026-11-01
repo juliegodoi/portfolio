@@ -116,43 +116,6 @@
       ]);
     },
 
-    crud() {
-      const row = (method, path, status, at) => (
-        `<p class="crud__row" data-at="${at}"><span class="verb verb--${method.toLowerCase()}">${method}</span><span class="crud__path">${path}</span><b class="code" data-at="${at + 450}">${status}</b></p>`
-      );
-      return `
-        <p class="ci__head muted">restful-api.dev · cypress</p>
-        ${row('POST', '/objects', '200', 300)}
-        ${row('GET', '/objects/:id', '200', 900)}
-        ${row('PUT', '/objects/:id', '200', 1500)}
-        ${row('DELETE', '/objects/:id', '200', 2100)}
-        ${row('GET', `/objects/:id <span class="muted">${tx('(excluído)', '(deleted)')}</span>`, '404', 2700)}
-        ${lines(3700, 0, [ok(tx('CRUD completo validado', 'full CRUD validated'))])}`;
-    },
-
-    robot() {
-      const c = 'robot testes/';
-      const rule = '<p class="pl muted robot__rule">' + '='.repeat(48) + '</p>';
-      return cmd(c) + rule + lines(afterCmd(c), 450, [
-        { html: `${tx('Preenchimento correto', 'Correct form filling')}<b class="robot__pass">| PASS |</b>` },
-        { html: `${tx('Preenchimento incorreto', 'Incorrect form filling')}<b class="robot__pass">| PASS |</b>` },
-        muted(tx('dados gerados com FakerLibrary', 'data generated with FakerLibrary')),
-        { html: `<span class="ok">2 tests, 2 passed, 0 failed</span>` },
-      ]);
-    },
-
-    jest() {
-      const c = 'npm test -- --coverage';
-      const start = afterCmd(c);
-      const rows = ['Statements', 'Branches', 'Functions', 'Lines'];
-      return cmd(c) + `
-        <p class="pl muted" data-at="${start}">calculator.js</p>
-        ${rows.map((label, i) => `
-          <div class="covbar" data-at="${start + 300 + i * 300}" data-keep>
-            <span>${label}</span><i></i><b data-count="100" data-suffix="%" data-at="${start + 300 + i * 300}"></b>
-          </div>`).join('')}
-        ${lines(start + 1800, 0, [ok(tx('todos os testes passaram', 'all tests passed'))])}`;
-    },
   };
 
   window.PROJECTS = [
@@ -233,45 +196,6 @@
       tags: ['Cypress', 'JavaScript'],
       loop: 6500,
       scene: scenes.webAutomation,
-    },
-    {
-      repo: 'api-test-atomation',
-      cat: 'api',
-      title: tx('CRUD de API · Cypress', 'API CRUD · Cypress'),
-      origin: tx('Projeto de estudo', 'Study project'),
-      desc: tx(
-        'Testes automatizados de API com Cypress cobrindo um CRUD completo (POST, GET, PUT e DELETE) na API pública restful-api.dev, incluindo casos de registro inexistente.',
-        'Automated API tests with Cypress covering a full CRUD (POST, GET, PUT and DELETE) on the public restful-api.dev API, including non-existent record cases.'
-      ),
-      tags: ['Cypress', 'REST', 'JavaScript'],
-      loop: 6500,
-      scene: scenes.crud,
-    },
-    {
-      repo: 'robot-automation',
-      cat: 'web',
-      title: 'Organo · Robot Framework',
-      origin: tx('Curso Alura · formação QA', 'Alura course · QA track'),
-      desc: tx(
-        'Testes funcionais no padrão BDD com Robot Framework e SeleniumLibrary, usando a FakerLibrary para gerar dados de preenchimento correto e incorreto.',
-        'BDD-style functional tests with Robot Framework and SeleniumLibrary, using FakerLibrary to generate valid and invalid form data.'
-      ),
-      tags: ['Robot Framework', 'Python', 'Selenium', 'Faker'],
-      loop: 6500,
-      scene: scenes.robot,
-    },
-    {
-      repo: 'jest-test',
-      cat: 'unit',
-      title: tx('Calculadora · Jest', 'Calculator · Jest'),
-      origin: tx('Projeto de estudo', 'Study project'),
-      desc: tx(
-        'Calculadora web com a lógica separada da interface e testes unitários em Jest, com 100% de cobertura de comandos, funções e ramificações.',
-        'Web calculator with logic separated from the UI and unit tests in Jest, reaching 100% statement, function and branch coverage.'
-      ),
-      tags: ['Jest', 'JavaScript', 'Node.js'],
-      loop: 6500,
-      scene: scenes.jest,
     },
   ];
 })();

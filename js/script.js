@@ -884,141 +884,263 @@ function initQuotes() {
 }
 
 /* =========================================================
-  Contato: animação ASCII do envelope
-  A carta entra no envelope, a aba fecha, o selo ♥ aparece,
-  o envelope sai voando e volta. Cada quadro é desenhado numa
-  grade de caracteres (W × H).
-  ========================================================= */
-function initMailArt() {
-  const pre = document.querySelector('.mail-art__env');
-  if (!pre) return;
+   Contato: caça ao bug (interativo)
+   O bug passeia pela janela. Com o mouse, o cursor vira uma lupa;
+   clicar (ou tocar) no bug esmaga e mostra um ✓. Se ninguém
+   interagir por alguns segundos, a lupa pega o bug sozinha.
+   ========================================================= */
+function initQaArt() {
+  const art = document.querySelector('.qa-art');
+  if (!art) return;
 
-  const W = 36;
-  const H = 10;
-  const BW = 25;            // largura do envelope (ímpar, para ter centro)
-  const TOP = 4;            // linha da borda de cima do envelope
-  const BASE_X = 5;         // posição horizontal do envelope parado
-  const LETTER = [
-    '┌───────────┐',
-    '│ ───────── │',
-    '│ ──────    │',
-    '│ ───────   │',
-    '│           │',
-  ];
+  const body = art.querySelector('.qa-art__body');
+  const bug = art.querySelector('.qa-bug');
+  const lens = art.querySelector('.qa-lens');
+  const fx = art.querySelector('.qa-fx');
+  const glyphs = [...art.querySelectorAll('.qa-burst i')];
+  const hint = art.querySelector('.qa-hint');
+  const score = art.querySelector('.qa-score');
+  const scoreValue = score.querySelector('b');
+  const status = art.querySelector('.qa-status');
+  const statusText = art.querySelector('.qa-status__text');
 
-  const frame = ({ flap = 'closed', letter = null, seal = '', pop = false, dx = 0, trail = false, blank = false }) => {
-    const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => [' ', '']));
-    const put = (x, y, ch, cls = '') => {
-      if (x >= 0 && x < W && y >= 0 && y < H) grid[y][x] = [ch, cls];
-    };
-    if (!blank) {
-      const x = BASE_X + dx;
-      const right = x + BW - 1;
-      const mid = x + (BW - 1) / 2;
-
-      // aba aberta (atrás da carta)
-      if (flap === 'open') {
-        [[3, 2], [2, 5], [1, 7]].forEach(([row, off]) => {
-          put(x + off, row, '╱');
-          put(right - off, row, '╲');
-        });
-        put(mid - 2, 0, '╱');
-        put(mid - 1, 0, '─'); put(mid, 0, '─'); put(mid + 1, 0, '─');
-        put(mid + 2, 0, '╲');
-      }
-
-      // carta descendo: só aparece a parte acima do envelope
-      if (letter !== null) {
-        LETTER.forEach((line, i) => {
-          const y = letter + i;
-          if (y >= TOP) return;
-          [...line].forEach((ch, j) => put(mid - 6 + j, y, ch, 'p'));
-        });
-      }
-
-      // corpo do envelope
-      put(x, TOP, '┌'); put(right, TOP, '┐');
-      put(x, TOP + 5, '└'); put(right, TOP + 5, '┘');
-      for (let c = x + 1; c < right; c++) {
-        put(c, TOP, '─');
-        put(c, TOP + 5, '─');
-      }
-      for (let r = TOP + 1; r < TOP + 5; r++) {
-        put(x, r, '│');
-        put(right, r, '│');
-      }
-
-      // aba fechada (V para dentro) + selo
-      if (flap === 'closed') {
-        [[1, 1], [2, 4], [3, 7]].forEach(([row, off]) => {
-          put(x + off, TOP + row, '╲');
-          put(right - off, TOP + row, '╱');
-        });
-        put(mid - 2, TOP + 4, '╲'); put(mid - 1, TOP + 4, '_');
-        put(mid + 1, TOP + 4, '_'); put(mid + 2, TOP + 4, '╱');
-        put(mid, TOP + 4, seal || '_', seal ? (pop ? 's pop' : 's') : '');
-      }
-
-      // rastro de movimento ao enviar
-      if (trail) {
-        [[2, TOP + 2], [6, TOP + 2], [4, TOP + 3], [9, TOP + 3], [3, TOP + 4]].forEach(([back, row]) => {
-          put(x - back, row, '─', 't');
-        });
-      }
-    }
-
-    // transforma a grade em HTML, agrupando caracteres com a mesma classe
-    return grid.map((row) => {
-      let html = '';
-      let open = null;
-      row.forEach(([ch, cls]) => {
-        if (cls !== open) {
-          if (open) html += '</span>';
-          if (cls) html += `<span class="${cls}">`;
-          open = cls;
-        }
-        html += ch;
-      });
-      if (open) html += '</span>';
-      return html;
-    }).join('\n');
-  };
-
-  const F = (opts, d) => ({ html: frame(opts), d });
-  const frames = [
-    F({ flap: 'open', letter: 0 }, 1000),
-    F({ flap: 'open', letter: 1 }, 170),
-    F({ flap: 'open', letter: 2 }, 170),
-    F({ flap: 'open', letter: 3 }, 170),
-    F({ flap: 'open' }, 350),
-    F({ flap: 'flat' }, 140),
-    F({ flap: 'closed' }, 380),
-    F({ flap: 'closed', seal: '♥', pop: true }, 1300),
-    ...[1, 3, 6, 10, 15, 21, 28, 36].map((dx) => F({ seal: '♥', dx, trail: dx > 1 }, 70)),
-    F({ blank: true }, 650),
-    ...[-30, -20, -12, -6, -2, 0].map((dx) => F({ flap: 'open', letter: 0, dx }, 60)),
-  ];
-
-  // Quem prefere menos movimento vê só o envelope fechado com o selo
-  if (REDUCED_MOTION) {
-    pre.innerHTML = frame({ seal: '♥' });
-    return;
+  // textos de status em PT (o EN vem de i18n.js)
+  Object.assign(I18N_PT, {
+    'qa.pop': 'corrigido!',
+    'qa.searching': 'procurando',
+    'qa.found': 'bug encontrado',
+    'qa.fixed': 'corrigido',
+    'qa.hintTouch': 'toque no bug para corrigir',
+  });
+  if (window.matchMedia('(hover: none)').matches) {
+    hint.dataset.i18n = 'qa.hintTouch';
+    hint.textContent = t('qa.hintTouch');
   }
 
-  let i = 0;
-  let timer = null;
-  const tick = () => {
-    pre.innerHTML = frames[i].html;
-    timer = setTimeout(tick, frames[i].d);
-    i = (i + 1) % frames.length;
+  const SPEED = 75;          // px por segundo passeando
+  const FLEE_SPEED = 240;    // px por segundo fugindo
+  const AUTO_AFTER = 6500;   // ms sem interação até a lupa agir sozinha
+
+  let mode = 'off';          // off | walking | hunting | caught
+  let visible = false;
+  let pointer = null;        // posição do mouse dentro da janela
+  let walkTimer = null;
+  let flees = 0;
+  let spawnedAt = 0;
+  let caught = 0;
+
+  const rand = (min, max) => min + Math.random() * (max - min);
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const setStatus = (state, key) => {
+    status.dataset.state = state;
+    statusText.dataset.i18n = key;
+    statusText.textContent = t(key);
+  };
+  const place = (el, x, y) => { el.style.transform = `translate(${x}px, ${y}px)`; };
+  const jump = (el, x, y) => {
+    el.style.transition = 'none';
+    place(el, x, y);
+    void el.offsetWidth;
+    el.style.transition = '';
+  };
+  const restart = (el, cls) => {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
   };
 
-  new IntersectionObserver(([entry]) => {
-    clearTimeout(timer);
-    if (entry.isIntersecting) tick();
-  }, { threshold: 0.3 }).observe(pre);
+  // posição real do bug agora (mesmo no meio de um movimento)
+  const bugPos = () => {
+    const b = body.getBoundingClientRect();
+    const r = bug.getBoundingClientRect();
+    return { x: r.left - b.left + r.width / 2, y: r.top - b.top + r.height / 2 };
+  };
 
-  pre.innerHTML = frames[0].html;
+  // anda até (x, y) virado para a direção do movimento
+  const moveTo = (x, y, speed = SPEED) => {
+    const from = bugPos();
+    const dist = Math.hypot(x - from.x, y - from.y);
+    const duration = Math.max(0.3, dist / speed);
+    bug.style.setProperty('--rot', `${Math.atan2(y - from.y, x - from.x) * 180 / Math.PI + 90}deg`);
+    bug.style.transition = `transform ${duration}s linear, opacity .3s`;
+    place(bug, x, y);
+    clearTimeout(walkTimer);
+    walkTimer = setTimeout(wander, duration * 1000 + rand(150, 700));
+  };
+
+  const wander = () => {
+    if (mode !== 'walking' || REDUCED_MOTION) return;
+    const w = body.clientWidth;
+    const h = body.clientHeight;
+    moveTo(rand(w * 0.12, w * 0.88), rand(h * 0.15, h * 0.78));
+  };
+
+  const spawn = () => {
+    if (!visible) { mode = 'off'; return; }
+    const w = body.clientWidth;
+    const h = body.clientHeight;
+    bug.classList.remove('is-squashed');
+    flees = 0;
+    spawnedAt = Date.now();
+    mode = 'walking';
+    if (REDUCED_MOTION) {
+      jump(bug, rand(w * 0.25, w * 0.75), rand(h * 0.25, h * 0.7));
+      bug.style.opacity = '1';
+      return;
+    }
+    // entra por um dos lados
+    const fromLeft = Math.random() < 0.5;
+    jump(bug, fromLeft ? -30 : w + 30, rand(h * 0.2, h * 0.75));
+    bug.style.opacity = '1';
+    bug.classList.add('is-walking');
+    if (!pointer) setStatus('watch', 'qa.watching');
+    wander();
+  };
+
+  const catchBug = async (byUser) => {
+    if (mode !== 'walking' && mode !== 'hunting') return;
+    mode = 'caught';
+    clearTimeout(walkTimer);
+
+    // congela o bug onde ele está
+    const p = bugPos();
+    bug.style.transition = 'none';
+    place(bug, p.x, p.y);
+    bug.classList.remove('is-walking');
+
+    bug.style.transition = '';
+    bug.classList.add('is-squashed');
+    if (!pointer) lens.classList.remove('is-on', 'is-found');
+
+    // o efeito fica sempre um pouco para dentro, para não ser cortado na borda
+    const w = body.clientWidth;
+    const h = body.clientHeight;
+    const fxX = Math.min(w - 56, Math.max(56, p.x));
+    const fxY = Math.min(h - 44, Math.max(84, p.y));
+
+    // sorteia caractere, direção e giro de cada fragmento
+    glyphs.forEach((g, i) => {
+      const angle = (i / glyphs.length) * Math.PI * 2 + rand(-0.3, 0.3);
+      const radius = rand(46, 84);
+      g.textContent = '01{};<>/#*'[Math.floor(Math.random() * 10)];
+      g.style.setProperty('--dx', `${Math.cos(angle) * radius}px`);
+      g.style.setProperty('--dy', `${Math.sin(angle) * radius}px`);
+      g.style.setProperty('--r', `${rand(-160, 160)}deg`);
+    });
+
+    place(fx, fxX, fxY);
+    if (REDUCED_MOTION) fx.classList.add('is-static');
+    else {
+      restart(fx, 'is-on');
+      restart(body, 'is-flash');
+    }
+    setStatus('fixed', 'qa.fixed');
+
+    if (byUser) {
+      caught += 1;
+      scoreValue.textContent = caught;
+      score.classList.add('is-on');
+      restart(score, 'is-bump');
+      hint.classList.add('is-hidden');
+    }
+
+    await sleep(1700);
+    bug.style.opacity = '0';
+    fx.classList.remove('is-on', 'is-static');
+    await sleep(500);
+    if (pointer) setStatus('scan', 'qa.searching');
+    spawn();
+  };
+
+  // ninguém interagiu: a lupa vem e pega o bug sozinha
+  const autoHunt = async () => {
+    mode = 'hunting';
+    clearTimeout(walkTimer);
+    const p = bugPos();
+    bug.style.transition = 'none';
+    place(bug, p.x, p.y);
+    bug.classList.remove('is-walking');
+
+    lens.classList.remove('is-follow', 'is-found');
+    jump(lens, -50, body.clientHeight + 40);
+    lens.classList.add('is-on');
+    setStatus('scan', 'qa.searching');
+    place(lens, p.x, p.y);
+    await sleep(950);
+    if (mode !== 'hunting') return;
+    lens.classList.add('is-found');
+    setStatus('found', 'qa.found');
+    await sleep(600);
+    if (mode !== 'hunting') return;
+    catchBug(false);
+  };
+
+  setInterval(() => {
+    if (visible && mode === 'walking' && !pointer && Date.now() - spawnedAt > AUTO_AFTER) autoHunt();
+  }, 500);
+
+  // ---------- interação ----------
+  const localPoint = (e) => {
+    const b = body.getBoundingClientRect();
+    return { x: e.clientX - b.left, y: e.clientY - b.top };
+  };
+
+  body.addEventListener('pointerenter', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    pointer = localPoint(e);
+    if (mode === 'hunting') { mode = 'walking'; bug.classList.add('is-walking'); wander(); }
+    body.classList.add('is-hunting');
+    lens.classList.remove('is-found');
+    lens.classList.add('is-on', 'is-follow');
+    place(lens, pointer.x, pointer.y);
+    setStatus('scan', 'qa.searching');
+  });
+
+  body.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    pointer = localPoint(e);
+    place(lens, pointer.x, pointer.y);
+    if (mode !== 'walking') return;
+
+    const p = bugPos();
+    const dist = Math.hypot(p.x - pointer.x, p.y - pointer.y);
+    const near = dist < 24;
+    lens.classList.toggle('is-found', near);
+    setStatus(near ? 'found' : 'scan', near ? 'qa.found' : 'qa.searching');
+
+    // o bug foge um pouco quando a lupa chega perto (no máximo 2 vezes)
+    if (!REDUCED_MOTION && dist < 70 && dist > 24 && flees < 2) {
+      flees += 1;
+      const w = body.clientWidth;
+      const h = body.clientHeight;
+      const len = dist || 1;
+      const x = Math.min(w - 20, Math.max(20, p.x + ((p.x - pointer.x) / len) * 110));
+      const y = Math.min(h - 30, Math.max(20, p.y + ((p.y - pointer.y) / len) * 110));
+      moveTo(x, y, FLEE_SPEED);
+    }
+  });
+
+  body.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    pointer = null;
+    body.classList.remove('is-hunting');
+    lens.classList.remove('is-on', 'is-follow', 'is-found');
+    spawnedAt = Date.now();   // dá um tempo antes da lupa automática
+    if (mode === 'walking') setStatus('watch', 'qa.watching');
+  });
+
+  // clique/toque perto do bug conta como acerto
+  body.addEventListener('pointerdown', (e) => {
+    if (mode !== 'walking') return;
+    const q = localPoint(e);
+    const p = bugPos();
+    if (Math.hypot(p.x - q.x, p.y - q.y) < 32) catchBug(true);
+  });
+
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    if (visible && mode === 'off') spawn();
+  }, { threshold: 0.3 }).observe(art);
 }
 
 /* ---------- Borda que acompanha o mouse nos cards ---------- */
@@ -1113,7 +1235,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTimeline();
   initPixelAvatars();
   initQuotes();
-  initMailArt();
+  initQaArt();
   initSpotlight();
   initScrollLine();
   initReveal();

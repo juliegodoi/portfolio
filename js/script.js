@@ -886,8 +886,8 @@ function initQuotes() {
 /* =========================================================
    Contato: caça ao bug (interativo)
    O bug passeia pela janela. Com o mouse, o cursor vira uma lupa;
-   clicar (ou tocar) no bug esmaga e mostra um ✓. Se ninguém
-   interagir por alguns segundos, a lupa pega o bug sozinha.
+   clicar (ou tocar) no bug esmaga e mostra um ✓. Sem interação,
+   o bug só continua andando.
    ========================================================= */
 function initQaArt() {
   const art = document.querySelector('.qa-art');
@@ -919,14 +919,12 @@ function initQaArt() {
 
   const SPEED = 75;          // px por segundo passeando
   const FLEE_SPEED = 240;    // px por segundo fugindo
-  const AUTO_AFTER = 6500;   // ms sem interação até a lupa agir sozinha
 
-  let mode = 'off';          // off | walking | hunting | caught
+  let mode = 'off';          // off | walking | caught
   let visible = false;
   let pointer = null;        // posição do mouse dentro da janela
   let walkTimer = null;
   let flees = 0;
-  let spawnedAt = 0;
   let caught = 0;
 
   const rand = (min, max) => min + Math.random() * (max - min);
@@ -981,7 +979,6 @@ function initQaArt() {
     const h = body.clientHeight;
     bug.classList.remove('is-squashed');
     flees = 0;
-    spawnedAt = Date.now();
     mode = 'walking';
     if (REDUCED_MOTION) {
       jump(bug, rand(w * 0.25, w * 0.75), rand(h * 0.25, h * 0.7));
@@ -997,8 +994,8 @@ function initQaArt() {
     wander();
   };
 
-  const catchBug = async (byUser) => {
-    if (mode !== 'walking' && mode !== 'hunting') return;
+  const catchBug = async () => {
+    if (mode !== 'walking') return;
     mode = 'caught';
     clearTimeout(walkTimer);
 
@@ -1036,13 +1033,11 @@ function initQaArt() {
     }
     setStatus('fixed', 'qa.fixed');
 
-    if (byUser) {
-      caught += 1;
-      scoreValue.textContent = caught;
-      score.classList.add('is-on');
-      restart(score, 'is-bump');
-      hint.classList.add('is-hidden');
-    }
+    caught += 1;
+    scoreValue.textContent = caught;
+    score.classList.add('is-on');
+    restart(score, 'is-bump');
+    hint.classList.add('is-hidden');
 
     await sleep(1700);
     bug.style.opacity = '0';
@@ -1051,33 +1046,6 @@ function initQaArt() {
     if (pointer) setStatus('scan', 'qa.searching');
     spawn();
   };
-
-  // ninguém interagiu: a lupa vem e pega o bug sozinha
-  const autoHunt = async () => {
-    mode = 'hunting';
-    clearTimeout(walkTimer);
-    const p = bugPos();
-    bug.style.transition = 'none';
-    place(bug, p.x, p.y);
-    bug.classList.remove('is-walking');
-
-    lens.classList.remove('is-follow', 'is-found');
-    jump(lens, -50, body.clientHeight + 40);
-    lens.classList.add('is-on');
-    setStatus('scan', 'qa.searching');
-    place(lens, p.x, p.y);
-    await sleep(950);
-    if (mode !== 'hunting') return;
-    lens.classList.add('is-found');
-    setStatus('found', 'qa.found');
-    await sleep(600);
-    if (mode !== 'hunting') return;
-    catchBug(false);
-  };
-
-  setInterval(() => {
-    if (visible && mode === 'walking' && !pointer && Date.now() - spawnedAt > AUTO_AFTER) autoHunt();
-  }, 500);
 
   // ---------- interação ----------
   const localPoint = (e) => {
@@ -1088,7 +1056,6 @@ function initQaArt() {
   body.addEventListener('pointerenter', (e) => {
     if (e.pointerType !== 'mouse') return;
     pointer = localPoint(e);
-    if (mode === 'hunting') { mode = 'walking'; bug.classList.add('is-walking'); wander(); }
     body.classList.add('is-hunting');
     lens.classList.remove('is-found');
     lens.classList.add('is-on', 'is-follow');
@@ -1125,7 +1092,6 @@ function initQaArt() {
     pointer = null;
     body.classList.remove('is-hunting');
     lens.classList.remove('is-on', 'is-follow', 'is-found');
-    spawnedAt = Date.now();   // dá um tempo antes da lupa automática
     if (mode === 'walking') setStatus('watch', 'qa.watching');
   });
 
@@ -1134,7 +1100,7 @@ function initQaArt() {
     if (mode !== 'walking') return;
     const q = localPoint(e);
     const p = bugPos();
-    if (Math.hypot(p.x - q.x, p.y - q.y) < 32) catchBug(true);
+    if (Math.hypot(p.x - q.x, p.y - q.y) < 32) catchBug();
   });
 
   new IntersectionObserver(([entry]) => {

@@ -2613,15 +2613,9 @@ button {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 6px 16px;
   padding-block: 18px;
-}
-
-.footer__right {
-  margin-left: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
 }
 
 /* =========================================================

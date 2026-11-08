@@ -207,6 +207,4 @@ window.I18N_EN = {
   'contact.cv': 'Résumé',
   'contact.cvValue': 'Download PDF',
 
-  'footer.made': 'made with HTML, CSS and JavaScript',
-  'footer.bugs': '0 known bugs',
 };

@@ -124,14 +124,9 @@ window.I18N_EN = {
 
   'stack.window': 'stack',
   'stack.eyebrow': '03 · Stack',
-  'stack.title': 'Technologies I use every day',
-  'stack.languages': 'Languages and markup',
-  'stack.frameworks': 'Frameworks',
-  'stack.testing': 'Testing and automation',
-  'stack.databases': 'Databases',
-  'stack.tools': 'Tools and infrastructure',
-  'stack.process': 'Management and process',
-  'stack.ai': 'AI and productivity',
+  'stack.title': 'Technologies I use and know',
+  'stack.daily': 'Day to day',
+  'stack.known': "Tools I've worked with",
 
   'projects.eyebrow': '04 · Projects',
   'projects.title': 'My work in practice',
